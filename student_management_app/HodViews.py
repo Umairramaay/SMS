@@ -133,21 +133,21 @@ def add_student_save(request):
             filename=fs.save(profile_pic.name,profile_pic)
             profile_pic_url=fs.url(filename)
 
-            try:
-                user=CustomUser.objects.create_user(username=username,password=password,email=email,last_name=last_name,first_name=first_name,user_type=3)
-                user.students.address=address
-                course_obj=Courses.objects.get(id=course_id)
-                user.students.course_id=course_obj
-                session_year=SessionYearModel.object.get(id=session_year_id)
-                user.students.session_year_id=session_year
-                user.students.gender=sex
-                user.students.profile_pic=profile_pic_url
-                user.save()
-                messages.success(request,"Successfully Added Student")
-                return HttpResponseRedirect(reverse("add_student"))
-            except:
-                messages.error(request,"Failed to Add Student")
-                return HttpResponseRedirect(reverse("add_student"))
+            # try:
+            user=CustomUser.objects.create_user(username=username,password=password,email=email,last_name=last_name,first_name=first_name,user_type=3)
+            user.students.address=address
+            course_obj=Courses.objects.get(id=course_id)
+            user.students.course_id=course_obj
+            session_year=SessionYearModel.object.get(id=session_year_id)
+            user.students.session_year_id=session_year
+            user.students.gender=sex
+            user.students.profile_pic=profile_pic_url
+            user.save()
+            messages.success(request,"Successfully Added Student")
+            return HttpResponseRedirect(reverse("add_student"))
+            # except:
+            #     messages.error(request,"Failed to Add Student")
+            #     return HttpResponseRedirect(reverse("add_student"))
         else:
             form=AddStudentForm(request.POST)
             return render(request, "hod_template/add_student_template.html", {"form": form})
@@ -456,7 +456,7 @@ def staff_disapprove_leave(request,leave_id):
 
 def admin_view_attendance(request):
     subjects=Subjects.objects.all()
-    session_year_id=SessionYearModel.objects.all()
+    session_year_id=SessionYearModel.object.all()
     return render(request,"hod_template/admin_view_attendance.html",{"subjects":subjects,"session_year_id":session_year_id})
 
 @csrf_exempt
@@ -464,7 +464,7 @@ def admin_get_attendance_dates(request):
     subject=request.POST.get("subject")
     session_year_id=request.POST.get("session_year_id")
     subject_obj=Subjects.objects.get(id=subject)
-    session_year_obj=SessionYearModel.objects.get(id=session_year_id)
+    session_year_obj=SessionYearModel.object.get(id=session_year_id)
     attendance=Attendance.objects.filter(subject_id=subject_obj,session_year_id=session_year_obj)
     attendance_obj=[]
     for attendance_single in attendance:
@@ -511,56 +511,56 @@ def admin_profile_save(request):
             messages.error(request, "Failed to Update Profile")
             return HttpResponseRedirect(reverse("admin_profile"))
 
-# def admin_send_notification_student(request):
-#     students=Students.objects.all()
-#     return render(request,"hod_template/student_notification.html",{"students":students})
+def admin_send_notification_student(request):
+    students=Students.objects.all()
+    return render(request,"hod_template/student_notification.html",{"students":students})
 
-# def admin_send_notification_staff(request):
-#     staffs=Staffs.objects.all()
-#     return render(request,"hod_template/staff_notification.html",{"staffs":staffs})
+def admin_send_notification_staff(request):
+    staffs=Staffs.objects.all()
+    return render(request,"hod_template/staff_notification.html",{"staffs":staffs})
 
-# @csrf_exempt
-# def send_student_notification(request):
-#     id=request.POST.get("id")
-#     message=request.POST.get("message")
-#     student=Students.objects.get(admin=id)
-#     token=student.fcm_token
-#     url="https://fcm.googleapis.com/fcm/send"
-#     body={
-#         "notification":{
-#             "title":"Student Management System",
-#             "body":message,
-#             "click_action": "https://studentmanagementsystem22.herokuapp.com/student_all_notification",
-#             "icon": "http://studentmanagementsystem22.herokuapp.com/static/dist/img/user2-160x160.jpg"
-#         },
-#         "to":token
-#     }
-#     headers={"Content-Type":"application/json","Authorization":"key=SERVER_KEY_HERE"}
-#     data=requests.post(url,data=json.dumps(body),headers=headers)
-#     notification=NotificationStudent(student_id=student,message=message)
-#     notification.save()
-#     print(data.text)
-#     return HttpResponse("True")
+@csrf_exempt
+def send_student_notification(request):
+    id=request.POST.get("id")
+    message=request.POST.get("message")
+    student=Students.objects.get(admin=id)
+    token=student.fcm_token
+    url="https://fcm.googleapis.com/fcm/send"
+    body={
+        "notification":{
+            "title":"Student Management System",
+            "body":message,
+            "click_action": "http://studentms1.herokuapp.com/student_all_notification",
+            "icon": "http://studentms1.herokuapp.com/static/dist/img/user2-160x160.jpg"
+        },
+        "to":token
+    }
+    headers={"Content-Type":"application/json","Authorization":"key=AAAACKLjmu4:APA91bHu13IFMBTDwrcgxW-jkqocLqRb4oDros4jBdy15iPSoNVkBvB5bRADi3CsysLPaEY1oBvwSuG5LNNsIyOs-PXdHY1OUwl95eAn-_lhqo9ETRqXr4CKqIDgsuFSMXEC_0SrKIHa"}
+    data=requests.post(url,data=json.dumps(body),headers=headers)
+    notification=NotificationStudent(student_id=student,message=message)
+    notification.save()
+    print(data.text)
+    return HttpResponse("True")
 
-# @csrf_exempt
-# def send_staff_notification(request):
-#     id=request.POST.get("id")
-#     message=request.POST.get("message")
-#     staff=Staffs.objects.get(admin=id)
-#     token=staff.fcm_token
-#     url="https://fcm.googleapis.com/fcm/send"
-#     body={
-#         "notification":{
-#             "title":"Student Management System",
-#             "body":message,
-#             "click_action":"https://studentmanagementsystem22.herokuapp.com/staff_all_notification",
-#             "icon":"http://studentmanagementsystem22.herokuapp.com/static/dist/img/user2-160x160.jpg"
-#         },
-#         "to":token
-#     }
-#     headers={"Content-Type":"application/json","Authorization":"key=SERVER_KEY_HERE"}
-#     data=requests.post(url,data=json.dumps(body),headers=headers)
-#     notification=NotificationStaffs(staff_id=staff,message=message)
-#     notification.save()
-#     print(data.text)
-#     return HttpResponse("True")
+@csrf_exempt
+def send_staff_notification(request):
+    id=request.POST.get("id")
+    message=request.POST.get("message")
+    staff=Staffs.objects.get(admin=id)
+    token=staff.fcm_token
+    url="https://fcm.googleapis.com/fcm/send"
+    body={
+        "notification":{
+            "title":"Student Management System",
+            "body":message,
+            "click_action":"http://studentms1.herokuapp.com/staff_all_notification",
+            "icon":"http://studentms1.herokuapp.com/static/dist/img/user2-160x160.jpg"
+        },
+        "to":token
+    }
+    headers={"Content-Type":"application/json","Authorization":"key=SERVER_KEY_HERE"}
+    data=requests.post(url,data=json.dumps(body),headers=headers)
+    notification=NotificationStaffs(staff_id=staff,message=message)
+    notification.save()
+    print(data.text)
+    return HttpResponse("True")
